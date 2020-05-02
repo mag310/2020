@@ -1,0 +1,41 @@
+version: '3'
+services:
+  php:
+    image: yiisoftware/yii2-php:7.3-fpm
+    volumes:
+      - ~/.composer:/root/.composer
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+      - ./docker/conf/php-fpm.d:/usr/local/etc/php-fpm.d:delegated
+      - ./:/app:delegated
+      - ./:/var/www
+      - "phpsocket:/var/run"
+    depends_on:
+      - db
+    environment:
+      - TZ="Asia/Yekaterinburg"
+
+  nginx:
+    image: nginx:latest
+    depends_on:
+      - php
+    ports:
+      - "8500:80"
+    volumes:
+      - ./docker/conf/nginx/conf.d:/etc/nginx/conf.d
+      - ./docker/conf/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./web:/var/www/web
+      - ./runtime/logs/nginx:/var/log/nginx:delegated
+      - "phpsocket:/var/run"
+
+  db:
+    image: mariadb:10.3
+    ports:
+      - 3306:3306
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpwd
+
+volumes:
+  phpsocket:
+  db:
