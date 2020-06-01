@@ -11,12 +11,16 @@ $config = [
     'bootstrap' => ['log'],
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
-        '@npm'   => '@vendor/npm-asset',
+        '@npm' => '@vendor/npm-asset',
     ],
     'components' => [
         'request' => [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'eoAxfRV2lVTbfd3Vhav54fGAxCp5bgJZ',
+            'parsers' => [
+                'multipart/form-data' => 'yii\web\MultipartFormDataParser',
+                'application/json' => 'yii\web\JsonParser',
+            ],
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
@@ -48,16 +52,22 @@ $config = [
         'authManager' => [
             'class' => DbManager::class,
         ],
-        /*
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                ['class' => \yii\rest\UrlRule::class, 'controller' => 'api/user']
             ],
         ],
-        */
+
     ],
     'params' => $params,
+
+    'modules' => [
+        'api' => [
+            'class' => \app\modules\api\Module::class,
+        ],
+    ]
 ];
 
 if (YII_ENV_DEV) {

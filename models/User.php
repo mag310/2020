@@ -11,6 +11,7 @@ use yii\web\IdentityInterface;
  * @property int $id
  * @property string|null $login
  * @property string|null $password
+ * @property string $accessToken
  */
 class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
 {
@@ -22,6 +23,14 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
         return 'users';
     }
 
+    public function beforeSave($insert)
+    {
+        return parent::beforeSave($insert);
+        if(empty($this->accessToken)){
+            $this->accessToken = random_bytes(123);
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -30,7 +39,32 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
         return [
             [['id'], 'integer'],
             [['login', 'password'], 'string', 'max' => 255],
+            [['accessToken'], 'string', 'max' => 128],
+            [['login', 'password', 'accessToken'], 'required'],
+            [['login'], 'unique']
+
         ];
+    }
+
+    /** @inheritDoc */
+    public function fields()
+    {
+        $fields = parent::fields();
+
+        unset($fields['password'], $fields['accessToken']);
+        return $fields;
+    }
+
+    /** @inheritDoc */
+    public function extraFields()
+    {
+        $fields = parent::extraFields();
+        $fields['token'] = 'accessToken';
+        $fields['callback'] = function () {
+            return $this->id . ". " . $this->login;
+        };
+        return $fields;
+
     }
 
     /**
@@ -42,6 +76,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             'id' => 'ID',
             'login' => 'Login',
             'password' => 'Password',
+            'accessToken' => 'Access token'
         ];
     }
 
@@ -80,7 +115,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
      */
     public static function findIdentityByAccessToken($token, $type = null)
     {
-        throw new \RuntimeException('Not implement');
+        return self::findOne(['users.accessToken' => $token]);
     }
 
     /**
