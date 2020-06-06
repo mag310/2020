@@ -39,6 +39,15 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpwd
 
+  npm:
+    build:
+      dockerfile: ./docker/npm/Dockerfile
+      context: ./.
+    volumes:
+      - ./:/app:delegated
+    env_file:
+      - .env
+
 volumes:
   phpsocket:
   db:
